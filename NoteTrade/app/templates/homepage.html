@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NoteTrade - Share and Discover Notes</title>
+<style>
+  /* Reset */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body, h1, h2, h3, p, ul, li, a, button {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+  }
+  ul {
+    list-style: none;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Variables */
+  :root {
+    --blue: #0073e6;
+    --blue-dark: #005bb5;
+    --orange: #f59e0b;
+    --orange-dark: #b4690e;
+    --gray-light: #f3f4f6;
+    --gray-dark: #374151;
+    --shadow-primary: rgba(0, 115, 230, 0.4);
+  }
+
+  body {
+    background: var(--gray-light);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Navbar */
+  nav {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    transition: background-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  nav.scrolled {
+    background: var(--blue);
+    box-shadow: 0 4px 15px var(--shadow-primary);
+  }
+  .nav-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-weight: 900;
+    font-size: 2rem;
+    color: var(--blue-dark);
+    user-select: none;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+  }
+  nav.scrolled .logo {
+    color: white;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+  }
+  .nav-links a {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--gray-dark);
+    position: relative;
+    padding: 0.3rem 0;
+    transition: color 0.3s ease;
+  }
+  nav.scrolled .nav-links a {
+    color: white;
+  }
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    width: 0;
+    height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover::after {
+    width: 100%;
+  }
+  .nav-links a:hover {
+    color: var(--orange);
+  }
+
+  /* Hamburger */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    width: 28px;
+    height: 20px;
+    justify-content: space-between;
+  }
+  .hamburger span {
+    height: 3px;
+    background: var(--blue-dark);
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+  }
+  nav.scrolled .hamburger span {
+    background: white;
+  }
+  @media (max-width: 768px) {
+    .nav-links {
+      position: fixed;
+      top: 60px;
+      right: -110%;
+      background: var(--blue);
+      height: calc(100% - 60px);
+      width: 220px;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 3rem 2rem;
+      transition: right 0.4s ease;
+      border-radius: 0 0 0 8px;
+      box-shadow: 0 0 40px var(--shadow-primary);
+      z-index: 999;
+    }
+    .nav-links.active {
+      right: 0;
+    }
+    .nav-links a {
+      color: white;
+      font-size: 1.3rem;
+    }
+    .nav-links a:hover {
+      color: var(--orange);
+    }
+    .hamburger {
+      display: flex;
+    }
+  }
+
+  /* Hero Section */
+  .hero {
+    background: linear-gradient(120deg, var(--blue), var(--orange));
+    color: white;
+    padding: 6rem 1.5rem 8rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    left: -30%;
+    width: 150%;
+    height: 220%;
+    background: rgba(255 255 255 / 0.15);
+    transform: rotate(45deg);
+    filter: blur(120px);
+    pointer-events: none;
+    opacity: 0;
+    animation: heroGlow 2s ease forwards 0.5s;
+    z-index: 0;
+  }
+  @keyframes heroGlow {
+    to {
+      opacity: 1;
+      transform: rotate(45deg) translate(40px, 40px);
+    }
+  }
+  .hero-content {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(50px);
+    animation: fadeSlideUp 1s ease forwards;
+  }
+  @keyframes fadeSlideUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .hero h1 {
+    font-size: 3.8rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    line-height: 1.1;
+  }
+  .hero p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 3rem;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  }
+  .btn-primary {
+    background: white;
+    color: var(--blue);
+    font-weight: 700;
+    padding: 1.2rem 3.2rem;
+    border-radius: 40px;
+    box-shadow: 0 10px 25px rgba(255 255 255 / 0.6);
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease,
+      box-shadow 0.4s ease,
+      transform 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    user-select: none;
+    display: inline-block;
+  }
+  .btn-primary:hover, .btn-primary:focus {
+    background: var(--orange);
+    color: var(--blue-dark);
+    box-shadow: 0 18px 50px rgba(245 158 11 / 0.8);
+    transform: scale(1.1);
+    outline: none;
+  }
+
+  /* Features Section */
+  .features {
+    max-width: 1200px;
+    margin: 5rem auto 6rem;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+  }
+  .feature-card {
+    background: white;
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .feature-card:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .feature-icon {
+    font-size: 4.5rem;
+    color: var(--blue);
+    margin-bottom: 1.8rem;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  .feature-card:hover .feature-icon {
+    color: var(--orange);
+  }
+  .feature-title {
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--gray-dark);
+  }
+  .feature-desc {
+    color: #555;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--blue-dark);
+    color: white;
+    text-align: center;
+    padding: 2.5rem 1rem;
+    font-size: 0.95rem;
+  }
+  footer a {
+    color: var(--orange);
+    font-weight: 700;
+  }
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-container">
+    <a href="/" class="logo" aria-label="NoteTrade homepage">NoteTrade</a>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Home</a>
+      <a href="/notes">Browse Notes</a>
+      <a href="/upload">Upload Note</a>
+      <a href="/transactions">Transactions</a> <!-- Added this -->
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" role="banner" aria-labelledby="hero-title">
+  <div class="hero-content">
+    <h1 id="hero-title">Share, Discover, and Trade Notes Effortlessly</h1>
+    <p>Your go-to platform for managing and exchanging study notes — fast, simple, and reliable.</p>
+    <a href="/upload" class="btn-primary" role="button">Upload Your Note</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" aria-label="Key features of NoteTrade">
+  <article class="feature-card" tabindex="0" role="region" aria-labelledby="feature1-title">
+    <div class="feature-icon" aria-hidden="true">📚</div>
+    <h2 class="feature-title" id="feature1-title">Organized Note Storage</h2>
+    <p class="feature-desc">Keep all your notes in one place, easy to access anytime, anywhere.</p>
+  </article>
+  <article class="feature-card" tabindex="0" role="region" aria-labelledby="feature2-title">
+    <div class="feature-icon" aria-hidden="true">🔍</div>
+    <h2 class="feature-title" id="feature2-title">Powerful Search & Browse</h2>
+    <p class="feature-desc">Find notes quickly with advanced search and filtering options.</p>
+  </article>
+  <article class="feature-card" tabindex="0" role="region" aria-labelledby="feature3-title">
+    <div class="feature-icon" aria-hidden="true">🚀</div>
+    <h2 class="feature-title" id="feature3-title">Fast Uploads & Downloads</h2>
+    <p class="feature-desc">Upload and download notes securely and lightning-fast.</p>
+  </article>
+  <article class="feature-card" tabindex="0" role="region" aria-labelledby="feature4-title">
+    <div class="feature-icon" aria-hidden="true">🤝</div>
+    <h2 class="feature-title" id="feature4-title">Community Sharing</h2>
+    <p class="feature-desc">Connect with others and share notes to help each other succeed.</p>
+  </article>
+</section>
+
+<!-- FOOTER -->
+<footer role="contentinfo">
+  <p>© 2025 NoteTrade. All rights reserved. | <a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+</footer>
+
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // Hamburger toggle for mobile nav
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  hamburger.addEventListener('click', () => {
+    const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+    hamburger.setAttribute('aria-expanded', !expanded);
+    navLinks.classList.toggle('active');
+  });
+
+  // Close nav menu on link click (mobile)
+  [...navLinks.querySelectorAll('a')].forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+      hamburger.setAttribute('aria-expanded', false);
+    });
+  });
+</script>
+
+</body>
+</html>
