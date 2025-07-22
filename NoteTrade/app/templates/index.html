@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NoteTrade – Browse Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Reset and base styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background-color: #111827;
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-left h1 {
+      font-size: 1.75rem;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 2px #00000080;
+    }
+
+    .nav-right a {
+      color: #f3f4f6;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .nav-right a:hover {
+      color: #93c5fd;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .filter-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filter-section input[type="text"],
+    .filter-section select {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #d1d5db;
+      font-size: 1rem;
+      background-color: #fff;
+      flex: 1 1 200px;
+      min-width: 150px;
+      transition: border-color 0.3s ease;
+    }
+
+    .filter-section input[type="text"]:focus,
+    .filter-section select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 8px #3b82f6aa;
+    }
+
+    /* Notes Grid */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .note-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgb(0 0 0 / 0.05);
+      background-color: #fff;
+      padding: 1.25rem;
+      transition: box-shadow 0.3s ease;
+    }
+    .note-card:hover {
+      box-shadow: 0 5px 15px rgb(0 0 0 / 0.12);
+    }
+
+    .note-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 0.75rem;
+      color: #111827;
+      min-height: 3rem;
+    }
+
+    .note-description {
+      font-size: 0.9rem;
+      color: #4b5563;
+      flex-grow: 1;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-height: 3.5rem;
+    }
+
+    .note-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .note-footer a.download-link {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 0.5rem;
+      transition: color 0.3s ease;
+    }
+    .note-footer a.download-link:hover {
+      color: #1e40af;
+    }
+
+    .preview-btn {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      white-space: nowrap;
+    }
+    .preview-btn:hover {
+      background-color: #2563eb;
+    }
+
+    /* Load More Button */
+    #loadMoreBtn {
+      margin: 0 auto 1.5rem;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      border: none;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgb(59 130 246 / 0.5);
+      transition: background 0.3s ease;
+      display: block;
+    }
+    #loadMoreBtn:hover {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+    }
+
+    #loadMoreBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #loadingSpinner {
+      display: none;
+      margin: 3rem auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3b82f6;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Modal styles */
+    #previewModal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      overflow: auto;
+      padding: 2rem;
+    }
+    #modalContent {
+      background: #fff;
+      border-radius: 8px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      padding: 1rem 1.5rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #closeModal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: #555;
+      transition: color 0.3s ease;
+    }
+    #closeModal:hover {
+      color: #000;
+    }
+    #pdfViewer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+    }
+    .pdf-page-canvas {
+      box-shadow: 0 0 8px rgba(0,0,0,0.15);
+      border-radius: 4px;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Pagination info */
+    #paginationInfo {
+      font-size: 0.95rem;
+      color: #374151;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Export button */
+    #exportCsvBtn {
+      margin: 0 auto 2rem;
+      display: block;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgb(37 99 235 / 0.6);
+      transition: background-color 0.3s ease;
+    }
+    #exportCsvBtn:hover {
+      background-color: #1e40af;
+    }
+  </style>
+
+  <!-- PDF.js CDN -->
+  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <h1><a href="/" style="text-decoration:none; color:inherit;">NoteTrade</a></h1>
+  </div>
+  <div class="nav-right">
+    <a href="/">Home</a>
+    <a href="/notes">Notes</a>
+    <a href="/upload">Upload</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+  </div>
+</nav>
+
+<main>
+  <h2>Browse All Notes</h2>
+
+  <div class="filter-section">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="🔍 Search by title..."
+      aria-label="Search notes by title"
+    />
+
+    <select id="subjectFilter" aria-label="Filter notes by subject">
+      <option value="">All Subjects</option>
+      <option value="Biology">Biology</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Math">Math</option>
+      <option value="Physics">Physics</option>
+      <option value="Economics">Economics</option>
+      <option value="English">English</option>
+      <option value="History">History</option>
+      <option value="Computer Science">Computer Science</option>
+    </select>
+
+    <select id="categoryFilter" aria-label="Filter notes by category">
+      <option value="">All Categories</option>
+      <option value="Study Guide">Study Guide</option>
+      <option value="Revision Notes">Revision Notes</option>
+      <option value="Exam Papers">Exam Papers</option>
+      <option value="Cheat Sheet">Cheat Sheet</option>
+      <option value="Worksheets">Worksheets</option>
+      <option value="Flashcards">Flashcards</option>
+    </select>
+
+    <button id="applyFilterBtn" aria-label="Apply filters">Filter</button>
+  </div>
+
+  <button id="exportCsvBtn" aria-label="Export displayed notes to CSV">Export CSV</button>
+
+  <div id="paginationInfo" aria-live="polite"></div>
+
+  <section class="notes-grid" id="notesContainer" aria-live="polite" aria-relevant="additions"></section>
+
+  <button id="loadMoreBtn" aria-label="Load more notes">Load More</button>
+
+  <div id="loadingSpinner" role="status" aria-live="polite" aria-label="Loading"></div>
+</main>
+
+<!-- Modal -->
+<div id="previewModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1">
+  <div id="modalContent">
+    <button id="closeModal" aria-label="Close preview modal">&times;</button>
+    <h3 id="modalTitle" style="margin-bottom: 1rem; text-align:center;">Note Preview</h3>
+    <div id="pdfViewer" aria-busy="false" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+  // Modal elements and focus trap variables
+  const previewModal = document.getElementById('previewModal');
+  const closeModalBtn = document.getElementById('closeModal');
+  const pdfViewer = document.getElementById('pdfViewer');
+  const modalContent = document.getElementById('modalContent');
+
+  // Focus trap helpers
+  let lastFocusedElement;
+
+  closeModalBtn.addEventListener('click', closePreview);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && previewModal.style.display === 'flex') {
+      closePreview();
+    }
+    if (previewModal.style.display === 'flex' && e.key === 'Tab') {
+      // Trap focus inside modal
+      const focusableElements = modalContent.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      const firstEl = focusableElements[0];
+      const lastEl = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) { // shift + tab
+        if (document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl.focus();
+        }
+      } else { // tab
+        if (document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+      }
+    }
+  });
+
+  function openPreview(pdfUrl) {
+    lastFocusedElement = document.activeElement;
+    previewModal.style.display = 'flex';
+    pdfViewer.innerHTML = '';
+    pdfViewer.setAttribute('aria-busy', 'true');
+    previewModal.focus();
+
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+    loadingTask.promise.then(pdf => {
+      const numPages = pdf.numPages;
+      const previewPagesCount = Math.ceil(numPages * 0.1) || 1;
+
+      let renderPromises = [];
+      for(let i = 1; i <= previewPagesCount; i++) {
+        renderPromises.push(
+          pdf.getPage(i).then(page => {
+            const viewport = page.getViewport({ scale: 1.2 });
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page-canvas';
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+              canvasContext: canvas.getContext('2d'),
+              viewport: viewport,
+            };
+            return page.render(renderContext).promise.then(() => {
+              pdfViewer.appendChild(canvas);
+            });
+          })
+        );
+      }
+
+      Promise.all(renderPromises).then(() => {
+        pdfViewer.setAttribute('aria-busy', 'false');
+      });
+    }).catch(() => {
+      pdfViewer.innerHTML = '<p style="color:#dc2626;">Error loading preview.</p>';
+      pdfViewer.setAttribute('aria-busy', 'false');
+    });
+  }
+
+  function closePreview() {
+    previewModal.style.display = 'none';
+    pdfViewer.innerHTML = '';
+    if (lastFocusedElement) lastFocusedElement.focus();
+  }
+
+  // Data and state variables
+  let allNotes = [];
+  const notesPerPage = 12;
+  let totalPages = 0;
+
+  
+  const searchInput = document.getElementById('searchInput');
+  const subjectFilter = document.getElementById('subjectFilter');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const applyFilterBtn = document.getElementById('applyFilterBtn');
+  const paginationInfo = document.getElementById('paginationInfo');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+  // Fetch notes from "backend API" (simulate with Promise)
+  function fetchNotesFromApi() {
+    // Simulated data with dummy URLs (should be replaced with real API call)
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const subjects = ['Biology', 'Chemistry', 'Math', 'Physics', 'Economics', 'English', 'History', 'Computer Science'];
+        const categories = ['Study Guide', 'Revision Notes', 'Exam Papers', 'Cheat Sheet', 'Worksheets', 'Flashcards'];
+        let notes = [];
+        for (let i = 1; i <= 100; i++) {
+          notes.push({
+            id: i,
+            title: `Note ${i} - ${subjects[i % subjects.length]} - ${categories[i % categories.length]}`,
+            description: `This is a detailed description of Note ${i}, a useful resource for ${subjects[i % subjects.length]} students.`,
+            subject: subjects[i % subjects.length],
+            category: categories[i % categories.length],
+            price: (Math.random() * 10).toFixed(2),
+            pdfUrl: `https://example.com/notes/note${i}.pdf`
+          });
+        }
+        resolve(notes);
+      }, 700);
+    });
+  }
+
+  function renderNotes(notes) {
+    for (const note of notes) {
+      const card = document.createElement('article');
+      card.className = 'note-card';
+      card.setAttribute('tabindex', '0');
+      card.innerHTML = `
+        <h3 class="note-title">${note.title}</h3>
+        <p class="note-description">${note.description}</p>
+        <div class="note-footer">
+          <span>${note.subject} | ${note.category}</span>
+          <span>Price: $${note.price}</span>
+          <button class="preview-btn" onclick="openPreview('${note.pdfUrl}')"
+            aria-label="Preview 10 percent of ${note.title}">
+            Preview 10%
+          </button>
+        </div>
+      `;
+      notesContainer.appendChild(card);
+    }
+  }
+
+  function updatePaginationInfo() {
+    const totalNotes = filteredNotes.length;
+    const loadedNotes = Math.min(currentPage * notesPerPage, totalNotes);
+    paginationInfo.textContent = `Showing ${loadedNotes} of ${totalNotes} notes`;
+  }
+
+  function loadMore() {
+    loadMoreBtn.disabled = true;
+    loadingSpinner.style.display = 'block';
+
+    setTimeout(() => {
+      const start = currentPage * notesPerPage;
+      const end = start + notesPerPage;
+      const nextBatch = filteredNotes.slice(start, end);
+      renderNotes(nextBatch);
+      currentPage++;
+
+      loadingSpinner.style.display = 'none';
+      loadMoreBtn.disabled = false;
+
+      updatePaginationInfo();
+
+      if (currentPage * notesPerPage >= filteredNotes.length) {
+        loadMoreBtn.style.display = 'none';
+      } else {
+        loadMoreBtn.style.display = 'block';
+      }
+    }, 600);
+  }
+
+  function applyFilters() {
+    const searchText = searchInput.value.toLowerCase();
+    const subjectVal = subjectFilter.value;
+    const categoryVal = categoryFilter.value;
+
+    filteredNotes = allNotes.filter(note => {
+      const matchesTitle = note.title.toLowerCase().includes(searchText);
+      const matchesSubject = subjectVal === '' || note.subject === subjectVal;
+      const matchesCategory = categoryVal === '' || note.category === categoryVal;
+      return matchesTitle && matchesSubject && matchesCategory;
+    });
+
+    notesContainer.innerHTML = '';
+    currentPage = 0;
+    loadMoreBtn.style.display = 'block';
+
+    if (filteredNotes.length === 0) {
+      notesContainer.innerHTML = '<p style="font-size:1.2rem; color:#6b7280;">No notes found.</p>';
+      loadMoreBtn.style.display = 'none';
+      paginationInfo.textContent = '';
+    } else {
+      loadMore();
+    }
+  }
+
+  // CSV export for currently displayed filtered notes
+  function exportToCsv() {
+    if (filteredNotes.length === 0) return alert('No notes to export.');
+
+    const header = ['ID', 'Title', 'Description', 'Subject', 'Category', 'Price', 'PDF URL'];
+    const rows = filteredNotes.map(n => [n.id, n.title, n.description, n.subject, n.category, n.price, n.pdfUrl]);
+
+    const csvContent = [header, ...rows].map(e => e.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'notetrade_notes_export.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // Infinite scroll fallback for load more
+  window.addEventListener('scroll', () => {
+    if (loadMoreBtn.style.display === 'block' && !loadMoreBtn.disabled) {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const nearBottom = document.body.offsetHeight - 200;
+
+      if (scrollPosition >= nearBottom) {
+        loadMore();
+      }
+    }
+  });
+
+  // Event listeners
+  applyFilterBtn.addEventListener('click', applyFilters);
+  searchInput.addEventListener('keyup', e => { if(e.key === 'Enter') applyFilters(); });
+  exportCsvBtn.addEventListener('click', exportToCsv);
+
+  // Initialization
+  fetchNotesFromApi().then(notes => {
+    allNotes = notes;
+    filteredNotes = notes;
+    loadMore();
+  });
+</script>
+</body>
+</html>
