@@ -6,4 +6,4 @@ Visual Studio Terminal Access:
 2. pip install fastapi uvicorn sqlmodel jinja2 python-multipart
 3. uvicorn app.main:app --reload
 
-If it doesnt work make sure to go on copilot or run and new terminal and put Cd NoteTrade and the third access code!
+If it doesnt work make sure to go on copilot or run a new terminal and put Cd NoteTrade and the third access code!
