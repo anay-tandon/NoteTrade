@@ -13,9 +13,6 @@ class Transaction(SQLModel, table=True):
     buyer: str                         # username / identifier of buyer
     price: float                       # price paid
     timestamp: datetime = Field(default_factory=datetime.utcnow)
-from typing import Optional
-from sqlmodel import SQLModel, Field
-
 
 class Note(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}
@@ -27,3 +24,9 @@ class Note(SQLModel, table=True):
     category: str
     price: float
     file_path: str
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    username: str = Field(index=True, unique=True)
+    email: str = Field(index=True, unique=True)
+    hashed_password: str

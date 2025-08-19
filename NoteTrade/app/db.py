@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Session, create_engine
-from app.models import Note, Transaction  # import all your models here
+from app.models import Note, Transaction, User  # import all your models here
 
 DATABASE_URL = "sqlite:///./notetrade.db"
 engine = create_engine(DATABASE_URL, echo=True)

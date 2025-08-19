@@ -6,19 +6,35 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from typing import List, Optional
 import os
-from app.db import create_db_and_tables
+from app.db import create_db_and_tables, get_session
+from passlib.context import CryptContext
+from app.models import Note, Transaction, User
+from jose import jwt 
+from datetime import datetime, timedelta
 
-app = FastAPI()
-    
+app = FastAPI(title="NoteTrade API")
+
+# Signup/Login
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return pwd_context.hash(password) 
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
+    SECRET_KEY = "563vbyt783tb4gc6gb7i4wuyfgi6cctb7rgnfwetbfukaeytr87ow3t6"  # Change this to a random, secret string!
+    ALGORITHM = "HS256"
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
 # Call this once at startup to create tables (if they don't exist)
 create_db_and_tables()
 
-# ... your other app routes, event handlers, etc.
-
-from app.models import Note, Transaction
-from app.db import create_db_and_tables, get_session
-
-app = FastAPI(title="NoteTrade API")
 
 # CORS middleware if needed
 origins = [
@@ -73,10 +89,10 @@ def about(request: Request):
 def contact(request: Request):
     return templates.TemplateResponse("contact.html", {"request": request})
 @app.get("/privacy", response_class=HTMLResponse)
-def contact(request: Request):
+def privacy(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})
 @app.get("/terms", response_class=HTMLResponse)
-def contact(request: Request):
+def terms(request: Request):
     return templates.TemplateResponse("terms.html", {"request": request})
 # API routes
 @app.get("/api/notes", response_model=List[Note])
@@ -109,7 +125,7 @@ async def upload_note(
     file: UploadFile = File(...),
     session: Session = Depends(get_session),
 ):
-    if file.filename.lower().endswith(".pdf"):
+    if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files allowed.")
 
     file_location = os.path.join(UPLOAD_DIR, file.filename)
@@ -141,3 +157,36 @@ def get_uploaded_file(filename: str):
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path=file_path, media_type="application/pdf", filename=filename)
+    
+@app.post("/api/signup")
+def signup(
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    session: Session = Depends(get_session)
+):
+    user = session.exec(select(User).where(User.username == username)).first()
+    if user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    hashed_password = get_password_hash(password)
+    new_user = User(username=username, email=email, hashed_password=hashed_password)
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+    return {"message": "User created successfully"}
+
+@app.post("/api/login")
+def login(
+    username_or_email: str = Form(...),
+    password: str = Form(...),
+    session: Session = Depends(get_session)
+):
+    user = session.exec(
+        select(User).where(
+            (User.username == username_or_email) | (User.email == username_or_email)
+        )
+    ).first()
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
