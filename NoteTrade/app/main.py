@@ -94,6 +94,13 @@ def privacy(request: Request):
 @app.get("/terms", response_class=HTMLResponse)
 def terms(request: Request):
     return templates.TemplateResponse("terms.html", {"request": request})
+@app.get("/signup", response_class=HTMLResponse)
+def signup_page(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request})
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
 # API routes
 @app.get("/api/notes", response_model=List[Note])
 def read_notes(

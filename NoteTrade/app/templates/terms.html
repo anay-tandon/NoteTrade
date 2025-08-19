@@ -197,9 +197,29 @@ word-break: break-word !important;
         <li><a href="/about" class="nav-link">About</a></li>
         <li><a href="/contact" class="nav-link">Contact</a></li>
         <li><a href="/privacy" class="nav-link active">Privacy</a></li>
+        <li><a href="/signup" id="signupLink">Sign Up</a></li>
+        <li><a href="/login" id="loginLink">Login</a></li>
+        <li><a href="#" id="logoutLink" style="display:none;">Logout</a></li>
       </ul>
     </div>
   </nav>
+
+  <script>
+    // Show/hide links based on login status
+    function updateNavbar() {
+        const token = localStorage.getItem('token');
+        document.getElementById('signupLink').style.display = token ? 'none' : '';
+        document.getElementById('loginLink').style.display = token ? 'none' : '';
+        document.getElementById('logoutLink').style.display = token ? '' : 'none';
+    }
+    updateNavbar();
+    document.getElementById('logoutLink').onclick = function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        updateNavbar();
+        window.location.href = "/login";
+    };
+</script>
   <!-- End of Navbar -->
 
   <div align="center" style="text-align: left;">

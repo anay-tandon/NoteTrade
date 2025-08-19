@@ -169,9 +169,29 @@
         <a href="/transactions" style="color: white; text-decoration: none; font-weight: 500; display: flex; align-items: center;">Transactions</a>
         <a href="/contact" style="color: white; text-decoration: none; font-weight: 500; display: flex; align-items: center;">Contact</a>
         <a href="/about" style="color: #facc15; text-decoration: none; font-weight: 700; display: flex; align-items: center;">About</a>
+        <a href="/signup" id="signupLink">Sign Up</a>
+        <a href="/login" id="loginLink">Login</a>
+        <a href="#" id="logoutLink" style="display:none;">Logout</a>
       </div>
     </div>
   </nav>
+
+  <script>
+    // Show/hide links based on login status
+    function updateNavbar() {
+        const token = localStorage.getItem('token');
+        document.getElementById('signupLink').style.display = token ? 'none' : '';
+        document.getElementById('loginLink').style.display = token ? 'none' : '';
+        document.getElementById('logoutLink').style.display = token ? '' : 'none';
+    }
+    updateNavbar();
+    document.getElementById('logoutLink').onclick = function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        updateNavbar();
+        window.location.href = "/login";
+    };
+</script>
   <header>
     <h1>About NoteTrade</h1>
     <p>Changing how students learn and earn — together.</p>

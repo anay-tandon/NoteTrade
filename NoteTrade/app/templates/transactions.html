@@ -292,6 +292,9 @@
         <li><a href="/upload">Upload Note</a></li>
         <li><a href="/notes">Browse Notes</a></li>
         <li><a href="/transactions">Transactions</a></li>
+        <li><a href="/signup" id="signupLink">Sign Up</a></li>
+        <li><a href="/login" id="loginLink">Login</a></li>
+        <li><a href="#" id="logoutLink" style="display:none;">Logout</a></li>
       </ul>
       <div class="hamburger" id="hamburger">
         <span></span>
@@ -300,6 +303,23 @@
       </div>
     </div>
   </nav>
+
+  <script>
+    // Show/hide links based on login status
+    function updateNavbar() {
+        const token = localStorage.getItem('token');
+        document.getElementById('signupLink').style.display = token ? 'none' : '';
+        document.getElementById('loginLink').style.display = token ? 'none' : '';
+        document.getElementById('logoutLink').style.display = token ? '' : 'none';
+    }
+    updateNavbar();
+    document.getElementById('logoutLink').onclick = function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        updateNavbar();
+        window.location.href = "/login";
+    };
+</script>
 
   <main>
     <h1>Your Transactions</h1>

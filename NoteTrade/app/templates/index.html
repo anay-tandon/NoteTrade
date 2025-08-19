@@ -303,8 +303,28 @@
     <a href="/upload">Upload</a>
     <a href="/about">About</a>
     <a href="/contact">Contact</a>
+    <a href="/signup" id="signupLink">Sign Up</a>
+    <a href="/login" id="loginLink">Login</a>
+    <a href="#" id="logoutLink" style="display:none;">Logout</a>
   </div>
 </nav>
+
+<script>
+    // Show/hide links based on login status
+    function updateNavbar() {
+        const token = localStorage.getItem('token');
+        document.getElementById('signupLink').style.display = token ? 'none' : '';
+        document.getElementById('loginLink').style.display = token ? 'none' : '';
+        document.getElementById('logoutLink').style.display = token ? '' : 'none';
+    }
+    updateNavbar();
+    document.getElementById('logoutLink').onclick = function(e) {
+        e.preventDefault();
+        localStorage.removeItem('token');
+        updateNavbar();
+        window.location.href = "/login";
+    };
+</script>
 
 <main>
   <h2>Browse All Notes</h2>
