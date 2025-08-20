@@ -24,7 +24,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
-    SECRET_KEY = "563vbyt783tb4gc6gb7i4wuyfgi6cctb7rgnfwetbfukaeytr87ow3t6"  # Change this to a random, secret string!
+    SECRET_KEY = "764b967bd547q2vc64y970nv85chycgbxa8rt3yvn9q87nq12waf0535trmkpqazcvvrdi"  # Change this to a random, secret string!
     ALGORITHM = "HS256"
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
@@ -100,6 +100,9 @@ def signup_page(request: Request):
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 # API routes
 @app.get("/api/notes", response_model=List[Note])

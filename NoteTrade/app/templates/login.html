@@ -1,39 +1,154 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Login - NoteTrade</title>
     <style>
-        nav {margin-bottom: 20px;}
-        nav a {margin-right: 15px; text-decoration: none; color: #0074d9;}
-        nav a.active {font-weight: bold; color: #111;}
-        form {max-width: 300px; margin: auto;}
-        label{display: block; margin-top: 10px;}
-        input[type="submit"] {margin-top: 15px;}
-        #loginResult {margin-top: 15px; color: green}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #3498db, #f39c12);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0074D9;
+        }
+        
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar ul li {
+            display: inline;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .navbar ul li a:hover {
+            color: #0074D9;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .auth-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .auth-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .auth-container button:hover {
+            background-color: #1c6ca4;
+        }
+
+        .auth-container p {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .auth-container a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .auth-container a:hover {
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/terms">Terms of Service</a>
-        <a href="/signup" id="signupLink">Sign Up</a>
-        <a href="/login" id="loginLink">Login</a>
-        <a href="#" id="logoutLink" style="display:none;">Logout</a>
+    
+   <!--Navbar--> 
+    
+    <nav class="navbar">
+        <div class="logo">NoteTrade</div>
+        <ul>        
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/signup" id="signupLink">Sign Up</a></li>
+            <li><a href="/login" id="loginLink">Login</a></li>
+            <li><a href="#" id="dashboardLink" style="display:none;">My Dashboard</a></li>
+            <li><a href="#" id="logoutLink" style="display:none;">Logout</a></li>
+        </ul>
     </nav>
-    <h2>Login</h2>
-    <form id="loginForm">
-        <label for="username_or_email">Username or Email:</label>
-        <input type="text" id="username_or_email" name="username_or_email" required>
-
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-
-        <input type="submit" value="Login">
-    </form>
+    
+    <!--Login Form-->
+    <div class="main-content"> 
+        <div class="auth-container">
+            <h2>Login to NoteTrade</h2>
+            <form id="loginForm">
+                <input type="text" id="username_or_email" name="username_or_email" placeholder="Username or Email" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+                <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+            </form>
+        </div>
+    </div>
     <div id="loginResult"></div>
+    
+    <!--JavaScript-->
+    
     <script>
         // Navbar logic
         function updateNavbar() {
@@ -41,13 +156,14 @@
             document.getElementById('signupLink').style.display = token ? 'none' : '';
             document.getElementById('loginLink').style.display = token ? 'none' : '';
             document.getElementById('logoutLink').style.display = token ? '' : 'none';
+            document.getElementById('dashboardLink').style.display = token ? '' : 'none';
         }
         updateNavbar();
         document.getElementById('logoutLink').onclick = function(e) {
             e.preventDefault();
             localStorage.removeItem('token');
             updateNavbar();
-            window.location.href = "/login";
+            window.location.href = "/";
         };
 
         // Login form logic
@@ -61,6 +177,7 @@
             });
             const result = await res.json();
             if (result.access_token) {
+                localStorage.setItem('token', result.access_token);
                 document.getElementById('loginResult').textContent = "Login successful!";
                 document.getElementById('loginResult').style.color = 'green';
                 setTimeout(() => {
