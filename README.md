@@ -3,7 +3,7 @@ NoteTrade 📚💸 — the student marketplace where you upload notes, earn mone
 Visual Studio Terminal Access:
 
 1. .venv\Scripts\activate
-2. pip install fastapi uvicorn sqlmodel jinja2 python-multipart
+2. pip install fastapi uvicorn sqlmodel jinja2 python-multipart pytest passlib
 3. uvicorn app.main:app --reload
 
 If it doesnt work make sure to go on copilot or run a new terminal and put Cd NoteTrade and the third access code!
